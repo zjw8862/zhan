@@ -186,7 +186,7 @@ function lotteryDraw(){
         $('.resultbox').fadeIn(300);
         
         if(drawData.Data[awards].AwardWorth=='0'||drawData.Data[awards].AwardWorth==null){ // 没有抽中时
-            $("#result-txt").html('没有抽中');
+            $("#result-txt").html('哎呀！还差一点点');
         }else{
             var retxt="恭喜获得价值<span>"+money+"</span>" +txt;
             $("#result-txt").html(retxt);
