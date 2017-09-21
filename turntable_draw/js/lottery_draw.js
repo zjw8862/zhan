@@ -1,4 +1,4 @@
-//drawData 长度可为2，4,6,8,10。等偶数  AwardIdid与下面prizeId 的随机值对应
+//drawData 长度可为2，4,6,8,10,等偶数  AwardId与下面prizeId 的随机值对应
 var drawData={"Code":0,"Message":"","Data":[
     {"AwardId":5,"AwardName":"学术规划课","AwardWorth":"580","AwardChance":20.00,"AwardCount":500,"LotteryCount":0,"AwardImage":"images/jppic01.png"},
     {"AwardId":6,"AwardName":"语法班","AwardWorth":"588","AwardChance":20.00,"AwardCount":500,"LotteryCount":0,"AwardImage":"images/jppic02.png"},
