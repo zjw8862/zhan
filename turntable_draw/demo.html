@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="renderer" content="webkit">
+<title></title>
+<style>
+.popLuckydraw{
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 850px;
+  height: 554px;
+  margin-left: -425px;
+  margin-top: -272px;
+  z-index: 101;
+  display: none;
+}
+.turntable{
+  width: 487px;
+  height: 554px;
+  position: relative;
+  z-index: 10;
+  background:url('../images//lottery_bg.png') no-repeat top center;
+  left:181px;
+}
+.popLuckydraw.smaWidth{
+    width: 487px;
+    margin-left: -243px;
+}
+.popLuckydraw.smaWidth .turntable{
+    left:0px;
+}
+.turntable.folf{
+  left:0px;
+}
+.turntable .rotate{
+  position: absolute;
+  top: 41px;
+  left: 37px;
+}
+.turntable .pointer{
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  top: 162px;
+  left: 162px;
+}
+.turntable .pointer .pointerbtn{
+  display: block;
+  width: 160px;
+  height: 160px;
+  -webkit-transition: all 0.3s;
+  -ms-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  transition: all 0.3s;
+  background:url('images/lottery_btn.png') no-repeat top center; 
+}
+.turntable .pointer.disabled .pointerbtn{
+  background:url('images/lottery_btn_disabled.png') no-repeat top center;
+  cursor: default;
+}
+.turntable #rotatecanvas{
+  top: 41px;
+  left: 37px;
+  position: absolute;
+}
+
+.hide{
+  display: none;
+}
+.resultbox{
+ display: none;
+}
+</style>
+</head>
+<body>
+
+	<div id="popLuckydraw" class="popLuckydraw smaWidth" style="display:block;">
+		<div class="turntable">
+			<canvas id="rotatecanvas" width="412" height="412"></canvas>
+			<div class="pointer"><a href="javascript:;" class="pointerbtn"></a></div>
+		</div>
+		<div class="resultbox">
+			<div class="successbox ">
+				<p id="result-txt">恭喜获得价值 <span>¥199</span>全科小班代金劵</p>
+			</div>
+			<div class="failbox hide">
+				<p>哎呀！还差一点点</p>
+			</div>
+		</div>
+	</div>
+	<!-- end of popLuckydraw -->
+  
+<script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
+<script src="js/lottery_draw.js"></script>
+<script>
+
+$(function(){ 
+	
+
+var draw1=new lotteryDraw();
+$('.pointer').click(function (){
+    if(bRotate)return;
+    draw1.startRun();
+});
+
+
+
+})
+</script>
+</body>
+</html>
