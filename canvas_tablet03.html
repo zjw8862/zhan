@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>mobile canvas tablet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100%;
+        }
+
+        li {
+            list-style: none;
+            padding: 2px 0;
+        }
+
+        canvas {
+            border: 1px solid #999;
+        }
+
+        .btnline {
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        .btnline .btn {
+            width: 16%;
+            float: left;
+            margin: 0 2%;
+            position: relative;
+        }
+
+        .btnline .btn ul {
+            border: 1px solid #666666;
+            border-top: 0;
+        }
+
+        .btnline a {
+            display: block;
+            text-decoration: none;
+            color: #666666;
+            padding: 4px 0px;
+            border: 1px solid #666666;
+            line-height: 20px;
+        }
+
+        .btnline a.on {
+            color: #71b5ef;
+            border: 1px solid #71b5ef;
+        }
+
+        .btnline li.on {
+            color: #71b5ef;
+        }
+
+        input[type='color'] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+        }
+
+        #reCanvas {
+            border: 1px solid red;
+            background: #fff;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <p id="use"></p>
+    <canvas id="myCanvas">对不起,你的浏览器不支持此对象,请升级你的浏览器后再次尝试</canvas>
+    <div class="btnline">
+        <div class="btn" id="size">
+            <a href="javascript:;">大小</a>
+            <ul>
+                <li data-size="2" class="on">2</li>
+                <li data-size="5">5</li>
+                <li data-size="10">10</li>
+                <li data-size="20">20</li>
+            </ul>
+        </div>
+        <div class="btn" id="color">
+            <a href="javascript:;">颜色</a>
+            <ul>
+                <li data-color="#000000" class="on">黑</li>
+                <li data-color="#ff0000">红</li>
+                <li data-color="#59bcfa">蓝</li>
+            </ul>
+        </div>
+        <div class="btn">
+            <a href="javascript:;" id="rubber">橡皮</a>
+        </div>
+        <div class="btn">
+            <a href="javascript:;" id="reset">清除</a>
+        </div>
+        <div class="btn">
+            <a href="javascript:;" id="save" style=" font-size:14px;">保存播放</a>
+        </div>
+        <div style="clear:both"></div>
+    </div>
+    <canvas id="reCanvas">对不起,你的浏览器不支持此对象,请升级你的浏览器后再次尝试</canvas>
+
+
+</body>
+
+</html>
+
+<script src="https://cdn.bootcss.com/jquery/1.8.3/jquery.js"></script>
+<script>
+
+    window.onload = function () {
+        var canvas = document.getElementById("myCanvas");
+        var canvas2 = document.getElementById("reCanvas");
+        var ctx = canvas.getContext("2d");
+        var ctx2 = canvas2.getContext("2d");
+        canvas.width = canvas2.width = window.innerWidth - 2;
+        canvas.height = canvas2.height = window.innerHeight * 0.6;
+
+        var LineIndex = 0;//画笔步数
+
+        var EventName = {
+            start: 'touchstart',
+            move: 'touchmove',
+            end: 'touchend'
+        };
+
+        var pen = {
+            position: [],
+            addXY: function (o) {
+                this.position.push(o);
+            },
+            option: {
+                lineWidth: 2,
+                lineStyle: '#000000',
+                lineCap: "butt"
+            },
+            Stroke: {},//对象存储每步画笔经过的坐标值
+            Drawing: function (can) {
+                if (!this.position.length) {
+                    return;
+                }
+                can.lineJoin = "round";
+                var start, end;
+                start = this.position[0].X;
+                end = this.position[0].Y;
+                can.beginPath();//重置画笔
+                can.moveTo(start, end); // 设置路径起点 
+                for (var i = 1; i < this.position.length; i++) {
+                    can.lineTo(this.position[i].X, this.position[i].Y); // 绘制线条
+                };
+                can.lineWidth = this.option.lineWidth; // 设置线宽
+                can.strokeStyle = this.option.lineStyle; // 设置线的颜色
+                can.lineCap = this.option.lineCap;
+                can.stroke();
+            },
+            clarePosi: function () { //每笔结束之前执行的记录值
+                pen.Stroke[LineIndex] = {};
+                pen.Stroke[LineIndex].p = this.position; //坐标值
+                pen.Stroke[LineIndex].w = this.option.lineWidth; //线宽
+                pen.Stroke[LineIndex].c = this.option.lineStyle; //线颜色
+                this.position = [];// 每笔结束后重置位置信息
+            }
+        };
+
+        var EventFunc = {
+            F_Start: function (e) {
+
+                pen.addXY(Position(e.touches[0]));
+            },
+            F_Move: function (e) {
+                e.preventDefault();
+                pen.addXY(Position(e.touches[0]));
+                pen.Drawing(ctx);
+
+            },
+            F_End: function (e) {
+                pen.addXY(Position(e.changedTouches[0]));
+                pen.Drawing(ctx);
+                pen.clarePosi();
+
+                LineIndex++;//每步累加1
+            }
+        };
+
+        function Position(e) {
+            var top = canvas.offsetTop;
+            var left = canvas.offsetLeft;
+            return {
+                X: e.clientX - top,
+                Y: e.clientY - left
+            }
+        }
+
+        function initEvent() {
+            canvas.addEventListener(EventName.start, EventFunc.F_Start, false);
+            canvas.addEventListener(EventName.move, EventFunc.F_Move, false);
+            canvas.addEventListener(EventName.end, EventFunc.F_End, false);
+        }
+
+        initEvent();
+
+
+        //执行复播
+        function rePlay() {
+            var a = 0, b = 0;
+            var fps = 30;
+            var raf = undefined;
+            function _run() {
+                setTimeout(function () {
+                    if (a < LineIndex) {
+                        if (b < pen.Stroke[a]['p'].length) {
+                            pen.addXY(pen.Stroke[a]['p'][b]);
+                            pen.option.lineWidth = pen.Stroke[a]['w'];
+                            pen.option.lineStyle = pen.Stroke[a]['c'];
+                            pen.Drawing(ctx2);
+                            if ((pen.Stroke[a]['p'].length - 1) == (b)) {
+                                a++;
+                                b = 0;
+                                pen.position = [];
+                            }
+                            //系统自动调度资源,重复绘制
+                            raf = window.requestAnimationFrame(_run);
+                        }
+                    } else {
+                        window.cancelAnimationFrame(raf);
+                    }
+                    b++;
+                }, 1000 / fps);
+            }
+            _run();
+        }
+
+        $('#size').find('li').on('click', function () {
+            $(this).addClass('on').siblings().removeClass('on');
+            var linW = $(this).attr('data-size');
+            pen.option.lineWidth = linW;
+        })
+
+        $('#color').find('li').on('click', function () {
+            $(this).addClass('on').siblings().removeClass('on');
+            var linC = $(this).attr('data-color');
+            pen.option.lineStyle = linC;
+        })
+
+
+        var memW, memC;
+        $('#rubber').on('click', function () {
+            if (!$(this).hasClass('on')) {
+                $(this).addClass('on');
+                memW = pen.option.lineWidth;
+                memC = pen.option.lineStyle;
+                pen.option.lineWidth = 15;
+                pen.option.lineStyle = '#fff';
+                pen.option.lineCap = "round";
+            } else {
+                $(this).removeClass('on');
+                pen.option.lineWidth = memW;
+                pen.option.lineStyle = memC;
+                pen.option.lineCap = "butt";
+            }
+        })
+
+        $('#reset').click(function () {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            LineIndex = 0;
+        })
+
+        $('#save').click(function () {
+            if (!$(this).hasClass('on')) {
+                $(this).addClass('on');
+                $('#reCanvas').show(0, function () {
+                    rePlay();
+                });
+            } else {
+                pen.clarePosi();
+                $(this).removeClass('on');
+                LineIndex = 0;
+                ctx2.clearRect(0, 0, canvas.width, canvas.height);
+                //ctx.clearRect(0,0,canvas.width,canvas.height);  
+                $('#reCanvas').hide();
+            }
+        })
+
+    };
+
+    function isMobile() {
+        var v = navigator.appVersion;
+        var reg = /Mobile/i;
+        return reg.test(v);
+    }
+
+</script>
