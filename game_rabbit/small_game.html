@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="renderer" content="webkit">
+  <title></title>
+  <style>
+    *{ margin: 0;padding: 0;}
+    body{
+      font-size: 30px;height:100%;position: absolute; background: #000;
+    }
+    canvas{
+        position: fixed;
+    }
+  </style>
+</head>
+<body>
+
+    <script type="text/javascript">
+(function () {
+    var canvas,ctx,cwidth,cheight,touchDot;
+    var itemIndex = 0,num=0,score=0;
+    var particles=[];
+
+    var rabimg= new Image();
+    rabimg.src="images/rabbit.svg";
+
+    (function () {
+          'use strict';
+
+          var vendors = ['webkit', 'moz'];
+          for (var i = 0; i < vendors.length && !window.requestAnimationFrame; ++i) {
+              var vp = vendors[i];
+              window.requestAnimationFrame = window[vp + 'RequestAnimationFrame'];
+              window.cancelAnimationFrame = window[vp + 'CancelAnimationFrame'] || window[vp + 'CancelRequestAnimationFrame'];
+          }
+          if (/iP(ad|hone|od).*OS 6/.test(window.navigator.userAgent) // iOS6 is buggy
+              ||
+              !window.requestAnimationFrame || !window.cancelAnimationFrame) {
+              var lastTime = 0;
+              window.requestAnimationFrame = function (callback) {
+                  var now = Date.now();
+                  var nextTime = Math.max(lastTime + 16, now);
+                  return setTimeout(function () {
+                      callback(lastTime = nextTime);
+                  }, nextTime - now);
+              };
+              window.cancelAnimationFrame = clearTimeout;
+          }
+      })();
+
+    //背景夜空星星方法
+    function Star(options) {
+        this.x = options.x;
+        this.y = options.y;
+        this.radius = options.radius;
+        this.color = options.color;
+    }
+    //
+    Star.prototype.draw = function () {
+        ctx.save();
+        ctx.beginPath();
+        ctx.fillStyle = this.color;
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+        ctx.restore();
+    }
+
+    //掉落物品
+    function Rewarditem() {
+
+        this.x = Math.random() * cwidth;
+        this.y = Math.random() * 80;
+        this.r = 128/2;
+        if (Math.random()>0.84) {
+            this.nature = 0;  //炸弹
+            this.imgsrc='images/bomb.svg';
+        }else{
+            this.nature = 1;  //奖励
+            this.imgsrc=['images/fruit01.svg','images/fruit02.svg'];
+        }
+        this.img0 = new Image();
+        if(Array.prototype.isPrototypeOf(this.imgsrc)){
+            var lnum= rnd(0, 1);
+            for(i=0;i<this.imgsrc.length;i++){
+                this.img0.src=this.imgsrc[lnum];
+            }
+        }else{
+            this.img0.src=this.imgsrc;
+        }
+    }
+
+    Rewarditem.prototype.draw = function () {
+        this.y = this.y * 1.017;
+        ctx.save();
+        ctx.beginPath();
+        ctx.globalCompositeOperation="source-over";
+        ctx.drawImage(this.img0,this.x,this.y);
+    }
+
+    //获取位置
+    function position(e) {
+          var top = canvas.offsetTop;
+          var left = canvas.offsetLeft;
+          return {
+              X: e.clientX - top,
+              Y: e.clientY - left
+          }
+    }
+
+    // 生词随机数
+    function rnd(min, max){
+        return min + Math.floor(Math.random() * (max - min + 1));
+    }
+
+    var painter = {
+        //初始化创建canvas
+        initCanvas: function () {
+            canvas = document.createElement('canvas');
+            cwidth = canvas.width = window.innerWidth;
+            cheight = canvas.height = window.innerHeight-20;
+            ctx = canvas.getContext('2d');
+            document.body.appendChild(canvas);
+            touchDot= {  //触摸点 此时的xy 为圆心中心
+                x:cwidth/2,//
+                y:cheight-100,
+                r:100
+            }
+        },
+
+        //绘制夜空背景星星和掉落物品
+        drawStars: function () {
+            ctx.clearRect(0,0, cwidth, cheight);
+            var star;
+            if (this.starList) {
+                for (var i = 0, j = this.starList.length; i < j; i++) {
+                    star = this.starList[i];
+                    star.y += 3;
+                    //底部超出背景时则从y轴位置从0开始
+                    if (star.y > cheight ) {
+                        star.y = 0;
+                    }
+                    star.draw();
+                }
+            } else {
+                this.starList = [];
+                for (var i = 0; i < 350; i++) {
+                    this.starList.push(new Star({
+                        x: Math.random() * cwidth,
+                        y: Math.random() * cheight,
+                        radius: Math.random() * 6,
+                        color: 'rgba(92,140,189,' + Math.random()+')'
+                    }));
+                }
+            }
+            itemIndex++;
+            if(itemIndex%20==0){
+                num++;
+                particles[num] = new Rewarditem();
+            }
+
+            for (var i in particles) {
+                particles[i].draw();
+                this.collision(touchDot, particles[i]);
+            }
+        },
+        //
+        stillEle:function(){
+            ctx.font = "40px Arial";
+            ctx.fillStyle = "#fff";
+            ctx.fillText("得分"+score, cwidth-160, 50);
+            this.initEvent();
+            var nx= touchDot.x;
+            var ny= touchDot.y;
+            ctx.drawImage(rabimg,nx-50,ny-100);
+
+        },
+        //碰撞检测
+        collision: function (obj1,obj2) {
+            var dotdis= Math.sqrt( Math.pow( Math.abs(obj1.x-obj2.x),2) + Math.pow( Math.abs(obj1.y-obj2.y),2)); //勾股定理
+            if(obj1.r + obj2.r > dotdis){
+                if(obj2.nature=='1'){
+                    score++;
+                    console.log('碰撞成功');
+                    delete obj2;
+                    obj2.y = -10000;
+                }else if(obj2.nature=='0'){
+                    ctx.globalCompositeOperation="source-over";
+                    ctx.font = "54px Arial";
+                    ctx.fillText("游戏结束,您的得分"+score, cwidth/2-210, cheight/2-27);
+                    //停止动画
+                    cancelAnimationFrame(this.raf);
+                }
+            }
+
+        },
+        initEvent: function () {
+            canvas.addEventListener('touchmove', painter.F_Start, false);
+            canvas.addEventListener('touchmove', painter.F_Move, false);
+            canvas.addEventListener('touchend', painter.F_End, false);
+        },
+        F_Start:function (e) {
+            var site = position(e.touches[0]);
+            if( site.X > (cwidth/2-100) && site.X < (cwidth/2+100) &&  site.Y > (cheight-200) && site.Y < cheight  ){
+
+                touchDot.x = site.X -50;
+                touchDot.y = site.Y;
+            }
+        },
+        F_Move:function (e) {
+            var site = position(e.touches[0]);
+            touchDot.x = site.X-50;
+            touchDot.y = site.Y;
+        },
+        arcRoute: function () {
+            var _this=this;
+            this.raf = requestAnimationFrame(function () {
+                _this.arcRoute();
+            });
+            this.drawStars();
+            this.stillEle();
+        },
+        init:function () {
+            this.initCanvas();
+            this.arcRoute();
+        }
+    }
+    painter.init();
+
+
+
+})();
+</script>
+  </body>
+</html>
