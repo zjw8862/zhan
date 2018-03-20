@@ -15,7 +15,7 @@
         .sliderbox.disabled .current_dot{  border-color: #bababa; }
         button{ margin-left: 120px; width: 90px; height: 35px;}
     </style>
-    <script src="js/vue.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
 </head>
 
 <body>
@@ -104,7 +104,7 @@
                         this.oneFlag = false; //改成false 之后不进入默认值计算
                     }else{
                         this.sw = e.style.left;
-                        this.curVal = parseInt(  per * this.maxV ) || 0; // 根据传入的比例值计算当前值 undefined 时为0
+                        this.curVal = parseInt(  per * this.maxV ) || 0; // 根据传入的比例值计算当前值 默认值为undefined 时为0
                     }
                     //就是触发自定义事件changeval
                     this.$emit('changeval',this.curVal);
