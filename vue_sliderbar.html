@@ -22,11 +22,11 @@
 
     <div id="app">
 
-        <z-slider :sliderdata="slider1" @changeval= "getValue1"></z-slider>
+        <z-slider :sliderdata="slider1" v-model= "getValue.v1" ></z-slider>
 
-        <z-slider :sliderdata="slider2" @changeval= "getValue2" ></z-slider>
+        <z-slider :sliderdata="slider2" v-model= "getValue.v2" ></z-slider>
 
-        <z-slider :sliderdata="slider3" @changeval= "getValue3" ></z-slider>
+        <z-slider :sliderdata="slider3" v-model= "getValue.v3" ></z-slider>
 
         <button @click = "getallValue">获取当前值</button>
 
@@ -73,7 +73,11 @@
         创建z-slider组件
         */
        Vue.component('z-slider', {
-            props: ['sliderdata', 'index'],
+            model:{
+                prop: 'value',
+                event:'input'
+            },
+            props: ['sliderdata', 'value'],
             data() {
                 return {
                     sw: '',//left值和宽度，事件里面计算后赋值
@@ -106,8 +110,8 @@
                         this.sw = e.style.left;
                         this.curVal = parseInt(  per * this.maxV ) || 0; // 根据传入的比例值计算当前值 默认值为undefined 时为0
                     }
-                    //就是触发自定义事件changeval
-                    this.$emit('changeval',this.curVal);
+                    //触发事件input
+                    this.$emit('input',this.curVal);
 
                 }
             }
@@ -137,20 +141,17 @@
                     },
                     disable:true  //禁止操作
                 },
-                getValue:[0,0,0],
+                getValue:{
+                    v1:'',
+                    v2:'',
+                    v3:''
+                }
             },
             methods: {
-                getValue1(a){
-                    this.getValue[0] = a ;
-                },
-                getValue2(a){
-                    this.getValue[1] = a ;
-                },
-                getValue3(a){
-                    this.getValue[2] = a ;
-                },
                 getallValue(){
-                    console.log(...this.getValue)
+                    //对象的解构
+                    let {v1,v2,v3} = this.getValue;
+                    console.log(v1,v2,v3)
                 }
             }
 
